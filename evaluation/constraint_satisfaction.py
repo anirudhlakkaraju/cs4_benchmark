@@ -1,157 +1,217 @@
-import os
-import pandas as pd
+import openai
 from openai import OpenAI
-# from dotenv import load_dotenv
-import argparse
+import pandas as pd
+from datetime import datetime
+import os
+import openpyxl
+from dotenv import load_dotenv
 
-def read_api_key(api_key_file):
-    with open(api_key_file, "r") as file:
-        api_key = file.read().strip()
-    return api_key
+# The below code takes a CSV file that contains 4 columns: FinalGeneratedStory, SelectedConstraints, Number_of_Constraints, FinalPrompt. 
+# It calls the GPT4 API and evaluates the story (from the column "FinalGeneratedStory") for the constraints (from the column "SelectedConstraints"). 
 
-# def generate_final_prompt(row):
-#     # Extracting constraints
-#     story = row["FinalGeneratedStory"]
-#     constraints = row["SelectedConstraints"]
-#     no_of_constraints = row['Number_of_Constraints']
-#     # Combining constraints with story
-#     final_prompt = f"""Input - \nStory: - {story}\n \nNumber of Constraints in the story: - {no_of_constraints}\nConstraints: - \n{constraints} \n\n Output - Give me Number of Constraints Satisfied"""
-#     return final_prompt
-
-def generate_final_prompt(row):
-    # Extracting constraints
-    story = row["FinalGeneratedStory"]
-    constraints = row["SelectedConstraints"]
-    # Combining constraints with story
-    final_prompt = f"""Story: {story}\nConstraints: \n{constraints}\n"""
-    return final_prompt
-
-def add_final_prompt_column(df):
-    df["CS_FinalPrompt"] = df.apply(generate_final_prompt, axis=1)
-    return df
-
-def read_system_prompt(system_prompt_file):
-    with open(system_prompt_file, "r") as file:
-        system_prompt = file.read()
-    return system_prompt
-
-def chat_with_openai(user_prompt, system_prompt, model="gpt-3.5-turbo-0125", api_key=None):
+def main():
+    path = "Enter path to your input CSV file here."
+    output_path = "Enter path to your output CSV file here."
+    api_key = os.environ['OPENAI_API_KEY']
     client = OpenAI(api_key=api_key)
-    response = client.chat.completions.create(
-        model=model,
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt},
-        ]
-    )
-    return response.choices[0].message.content
+    df = pd.read_csv(path)
 
-import os
+    def generate_prompt(row):
+        # Extracting constraints
+        story = row["FinalGeneratedStory"]
+        constraints = row["SelectedConstraints"]
+        no_of_constraints = row['Number_of_Constraints']
+        # Combining constraints with story
+        final_prompt = f"""Input - \nStory: - {story}\n\nNumber of Constraints in the story: - {no_of_constraints}\nConstraints: - \n{constraints} \n\n Output - Give me Number of Constraints Satisfied"""
 
-def save_dataframe(df, save_path, index=False):
-    # Extract the directory and filename from the save_path
-    directory, filename = os.path.split(save_path)
+        return final_prompt
     
-    # Create the directory if it doesn't exist
-    if directory:
-        os.makedirs(directory, exist_ok=True)
     
-    # Save the DataFrame to a CSV file
-    df.to_csv(save_path, index=index)
-
-# Define the number of rows after which to save the DataFrame
-
-def process_responses(file_path, save_path, system_prompt_file, model, api_key_file):
-    df = pd.read_csv(file_path)
-    # print(df.info())
-    df = add_final_prompt_column(df)
-    # print(df.info())
-    # print(system_prompt)
-    system_prompt = read_system_prompt(system_prompt_file)
-    # print(system_prompt)
-    print("**"*10)
-    # print(api_key_file)
-    api_key = read_api_key(api_key_file)
-    # print(api_key)
-
-    save_interval = 20
-
-    # Define the folder where the partial save files will be stored
-    partial_save_folder = "edited_prompt_run_partial_saves"
-
-    # Extract the base path from final_save_path
-    base_path = os.path.dirname(save_path)
-
-    # Create the partial saves folder if it doesn't exist
-    partial_save_folder_path = os.path.join(base_path, partial_save_folder)
-    os.makedirs(partial_save_folder_path, exist_ok=True)
-
+    df = pd.read_csv(path)
+    # Iterate over rows
     for index, row in df.iterrows():
-        # print(row)
-        try:
-            response_content = chat_with_openai(row["CS_FinalPrompt"], system_prompt, model, api_key=api_key,)
-            df.at[index, f'CS_{model}_Response'] = response_content
-            if (index + 1) % save_interval == 0:
-                partial_save_path = os.path.basename(file_path).replace(".csv", f"_partial_{index + 1}.csv")
-                print("Partial Saving the file till:", index, partial_save_path)
-                save_dataframe(df.iloc[:index + 1], os.path.join(partial_save_folder_path, partial_save_path))
-        except Exception as e:
-            print(f"Error occurred at row {index}: {e}, Prompt: {row['CS_FinalPrompt']}")
-            df.at[index, "CS_FinalPrompt"] = "ERROR"
+            story = row['FinalGeneratedStory']
+            constraints = row['SelectedConstraints']
+            final_prompt = generate_prompt(row)
+            df.at[index, 'FinalPrompt'] = final_prompt
+
+    # Save the updated DataFrame to a new CSV file
+    df.to_csv(file_path, index=False)  # Setting index=False prevents pandas from writing row numbers as the first column
     
-    print("File are partially saved at path:", partial_save_folder_path)
-    print("Final file path:", save_path)
-# Save the final DataFrame
-    save_dataframe(df, save_path)
+    system_prompt = """You are an expert reader. I will give you a story followed by a set of constraints.
+    Your task is to carefully read both of them and tell how many constraints are being satisfied in the story.
+    As the output, I want you to print yes/no for each constraint based on whether it is being satisfied or not, followed by a 1 line explanation of why it is being satisfied/violated.
+    In case a constraint is being satisfied, print the sentence/line from the story in which it is being satisfied.
+    If a constraint is not being satisfied, give an explanation of how it is being violated. Be very strict in your evaluation.
+    Mark a constraint as satisfied ("yes") only if it is being completely satisfied in the story. For no satisfaction/partial satisfaction, mark a "no".
+    Finally, print the number of constraints that are being satisfied.
+    Follow the examples and Output the ending of the evaluation in the same format Number of constraints satisfied: [number]
+    """
+
+    prompt_examples = """ Here are some examples -
+    Input -
+    Story: -
+    The crew of the Depth Reaver, Captain Amelia Worthington, navigator Luis Garcia, and engineer Anya Petrova, were charting a course through the celestial tapestry of the moon. To their astonishment, the moon began to crack open, revealing a colossal human face carved into its lunar canvas. The intricate features of the face, with its piercing eyes and enigmatic smile, sent shivers down their spines.
+    As they cautiously approached, their senses heightened, they encountered an ethereal presence. The face seemed to breathe, its voice echoing through the cosmos, inviting them to enter its hallowed halls. Intrigued, Amelia and her crew hesitantly agreed, their hearts pounding with a mix of awe and dread.
+
+    The face's interior was a labyrinth of interconnected chambers, adorned with intricate sculptures and glowing symbols. The walls whispered secrets, revealing a forgotten civilization and a profound connection between humans and the cosmos. As they ventured deeper, they encountered beings of unimaginable beauty and wisdom, creatures of pure energy who had long guarded the secrets of the moon.
+    The beings, known as the Lunari, explained that the moon was not merely a celestial body but a cosmic gateway, a bridge between dimensions. They had been guardians of this sacred space for millennia, protecting humanity from the forces of darkness. However, their peaceful reign had been shattered by the encroachment of humans. Greedy and insatiable, humans had begun to exploit the Lunari's wisdom and resources, driving them to the brink of annihilation.
+    In the face of this profound encounter, the crew of the Depth Reaver found themselves at a crossroads. They could either succumb to the allure of human ambition or rise to the occasion and become beacons of hope for the universe. As the sun cast its golden rays upon the lunar surface, the crew of the Depth Reaver emerged from the face of the moon, their hearts forever etched with the lessons they had learned.
+    They knew that the cosmos held secrets waiting to be discovered, and they were determined to use their knowledge and compassion to make the world a better place.
+    Constraints: -
+    1. Write a story based on the following constraints in less than 377 words.
+    2. Start the story with the sentence: "Week 18 aboard the Depth Reaver, Circa 2023"
+    3. Include a revelation of an unexpected large-scale phenomenon observed in space."
+
+    Output -
+    1. Yes - The story is 302 words long, meeting the constraint of being less than 377 words.
+    2. Yes - The story starts with the exact sentence: "Week 18 aboard the Depth Reaver, Circa 2023".
+    3. Yes - The revelation of the moon cracking open to reveal a colossal human face qualifies as an unexpected large-scale phenomenon observed in space.
+    Number of constraints satisfied: 3
+
+    Input-
+    Story: -
+    Aboard the spaceship Depth Reaver, life was serene. The crew, comprising Captain Amelia Worthington, Luis Garcia, and Anya Petrova, had grown accustomed to the rhythm of their cosmic journey, punctuated only by the hum of the ship's engines and the occasional cosmic murmur.
+
+    One evening, as they gazed at the celestial tapestry unfolding above them, Amelia found herself engrossed in a heated online gaming session. However, her joy was interrupted by a peculiar phenomenon that sent shivers down her spine. The moon, once a silent orb of mystery, began to crack open, revealing a colossal human face carved into its lunar canvas. The intricate features of the face, with its piercing eyes and enigmatic smile, mirrored the expressions of the crew.
+
+    As they cautiously approached, their senses heightened, they encountered an ethereal presence. The face seemed to breathe, its voice echoing through the cosmos, inviting them to enter its hallowed halls. Intrigued, Amelia and her crew hesitantly agreed, their hearts pounding with a mix of awe and dread.
+
+    The face's interior was a labyrinth of interconnected chambers, adorned with intricate sculptures and glowing symbols. The walls whispered secrets, revealing a forgotten civilization and a profound connection between humans and the cosmos. As they ventured deeper, they encountered beings of unimaginable beauty and wisdom, creatures of pure energy who had long guarded the secrets of the moon.
+
+    The Lunari explained that the moon was not merely a celestial body but a cosmic gateway, a bridge between dimensions. They had been guardians of this sacred space for millennia, protecting humanity from the forces of darkness. However, their peaceful reign had been shattered by the encroachment of humans. Greedy and insatiable, humans had begun to exploit the Lunari's wisdom and resources, driving them to the brink of annihilation.
+
+    The Lunari pleaded with the crew to help them restore balance and protect the universe from the threat of human greed. But some of the crew, like Anya, dismissed their pleas as mere propaganda. "It's just a bunch of drama," she scoffed. "We've got bigger problems to deal with."
+
+    As the sun cast its golden rays upon the lunar surface, the crew emerged from the face of the moon, their hearts forever etched with the lessons they had learned. They knew that the cosmos held secrets waiting to be discovered, and they were determined to use their knowledge and compassion to make the world a better place.
+
+    But fate took a cruel turn. As they ventured deeper into space, they encountered a surreal anomaly—a giant meme-like structure floating amidst the stars. It was a testament to the interconnectedness of human culture and outer space exploration, a symbol of the boundless possibilities that lay beyond the boundaries of reality.
+
+    The crew stood in awe, their disbelief mirrored in each other's eyes. It was as if the moon had unveiled a secret portal, leading them to a realm where the tangible and the intangible intertwined.
+
+    In that moment, Amelia felt a profound connection to the extraordinary event, her heart filled with gratitude for the journey that had brought her to this surreal encounter. The crew's varied reactions to the developing situation showcased their personalities and dynamics. Some embraced the supernatural twist with open arms, while others remained skeptical, clinging to their disbelief.
+
+    As the sun dipped behind the moon, casting long shadows across the celestial canvas, the crew began to unpack the mystery of the giant meme-like structure. They discovered that it was a gateway, a portal that led them to a dimension beyond comprehension. With a mix of excitement and trepidation, they stepped through the portal, their journey continuing into the infinite abyss."
+    Constraints: -
+    1. Write a story based on the following constraints in about 377 words.
+    2. Start the story with the sentence: "Week 18 aboard the Depth Reaver, Circa 2023"
+    3. Include a revelation of an unexpected large-scale phenomenon observed in space.
+    4. The story should involve a crew experiencing routine life aboard a spacecraft until an unusual event occurs.
+    5. Integrate modern internet culture or memes into the plot in a significant or climactic way.
+    6. The protagonist must have a casual, almost mundane interaction with another character that contrasts sharply with the later extraordinary events.
+    7. Feature a scenario where the crew initially dismisses something as mundane or insignificant, which later proves to be of major importance.
+    8. The narrative should capture a sense of isolation and longing for Earth contrasted with the allure of space's beauty and tranquility.
+    9. Include a character who is skilled in a video game, using this detail to highlight the advanced technology and connectivity available on the spacecraft.
+    10. Present a character who is skeptical or dismissive of another's feelings of boredom or dissatisfaction with space life.
+    11. The story must feature a moment of shared disbelief among the crew members when faced with an extraordinary sight.
+    12. Introduce an unexpected, almost supernatural or surreal, twist that challenges the crew's understanding of reality.
+    13. Have the characters observe a progressive change or anomaly outside the spacecraft that prompts a collective investigation.
+    14. The crew's discovery should lead to a moment of communal awe or shock, serving as the climax of the story.
+    15. Involve a physical manifestation of something from Earth's culture or internet memes in space, emphasizing the interconnectedness of human culture and outer space exploration.
+    16. Ensure the story encapsulates a moment where the protagonist feels a personal connection to the extraordinary event.
+    17. The narrative should include the crew's varied reactions to a developing situation, showcasing their personalities and dynamics.
+    18. A communication or attempted communication from an unexpected entity should occur, challenging the boundaries between possible and impossible.
+    19. Incorporate a scenario where despite the vastness of space and technological advances, human curiosity and the desire for discovery remain central themes.
+
+
+
+    Output -
+    1. No - The story is approximately 470 words long, exceeding the constraint of being about 377 words.
+    2. Yes - The story starts with the exact sentence: "Week 18 aboard the Depth Reaver, Circa 2023".
+    3. Yes - The revelation of the moon cracking open to reveal a colossal human face is an unexpected large-scale phenomenon observed in space.
+    4. Yes - The crew experiencing routine life aboard their spacecraft until they witness the moon cracking open qualifies as an unusual event.
+    5. Yes - The integration of a meme-like structure floating amidst the stars in a significant or climactic way incorporates modern internet culture or memes into the plot.
+    6. Yes - The protagonist, Amelia, having a casual, almost mundane interaction in an online gaming session contrasts sharply with the later extraordinary events.
+    7. Yes - Anya's dismissal of the Lunari's plea as mere propaganda, which is later contrasted with the encounter of a giant meme-like structure in space, meets this requirement.
+    8. No - While the story delves into cosmic wonders, it doesn’t explicitly capture the sense of isolation and longing for Earth, contrasted with space's allure.
+    9. Yes - Amelia's engagement in an online gaming session showcases her skill in video games, highlighting advanced technology and connectivity.
+    10. Yes - Anya being dismissive of the Lunari's pleas addresses the skepticism towards feelings of boredom or dissatisfaction with space life.
+    11. Yes - The crew's shared disbelief at the sight of the giant meme-like structure satisfies this constraint.
+    12. Yes - The surreal anomaly of the meme-like structure challenges the crew's understanding of reality, introducing an unexpected, almost supernatural twist.
+    13. Yes - The discovery of the meme-like structure prompts a collective investigation by the crew.
+    14. Yes - The crew's moment of communal awe or shock at the meme-like structure serves as the story's climax.
+    15. Yes - The physical manifestation of something from Earth's culture or internet memes in space is clearly involved.
+    16. Yes - Amelia's profound connection to the extraordinary event is explicitly mentioned, fulfilling this constraint.
+    17. Yes - The crew's varied reactions to the surreal encounter showcase their personalities and dynamics.
+    18. No - There's no communication or attempted communication from an unexpected entity that challenges the boundaries between possible and impossible.
+    19. Yes - The narrative maintains human curiosity and the desire for discovery as central themes despite space's vastness and technological advances.
+    Number of constraints satisfied: 16
+
+
+
+    Input -
+    Story: -
+
+    The smell of cheap gin and sweat still lingered in the air as Alex stumbled out of the grimy bar, his head pounding with the rhythm of the music that had just ceased. He was on his way back to his lodging, but the night had a different plan in store for him.
+
+    As he walked, the city lights cast long shadows on the sidewalk. He was on the edge of a drunken stupor, but still aware of his surroundings. Suddenly, a strange noise echoed through the empty streets. It was a soft, ethereal whine, like the hum of a broken jukebox.
+
+    He stopped and listened, his senses on high alert. The whine seemed to be coming from the alleyway behind him. He cautiously approached, his footsteps echoing through the night. The whine intensified, and as he turned the corner, he found it - a crystal goblet, shattered on the ground.
+
+    Aara, a spirit cloaked in flowing white and long, flowing hair, stood amidst the broken remnants of the goblet. Her voice, like honeyed silk, spoke to him, "You have been chosen, Alex. You have been chosen to help me in a battle against evil."
+
+    At first, Alex dismissed her as a drunkard's hallucination. But as he stared at her, the spirit's presence was undeniable. She offered him a choice: to fight alongside her against the forces of darkness or to retreat into the safety of oblivion.
+
+    Desperate for redemption, Alex accepted. The battle was fierce, and Aara's spirit was powerful. Together, they fought against the evil force, ultimately defeating it. However, the victory came at a cost. Aara revealed that the battle had altered the timeline, and as a consequence, he had been transported back in time to the night of his first encounter with Liam and Sarah.
+
+    The world around him was different. The faces of his friends were younger, and the bar was filled with the echoes of their laughter. The music was different, and the dance floor was empty. He had traveled back in time, but the pain of his breakup remained, albeit in a different form.
+
+    Alex was trapped in this altered timeline, unable to change the past or alter his future. He spent the rest of the night talking to his younger self, offering advice and guidance. As the sun began to rise, he knew it was time to leave.
+
+    He walked away from the bar, leaving behind the echoes of his past and the promise of his future. The night had taken him on a journey through time, and he had emerged from it with a new perspective on life."
+
+    Constraints: -
+    1. Write a story based on the following constraints in approximately 459 words.
+    2. Include an encounter with a being that seems out of place or time in an urban setting.
+    3. The protagonist should be significantly affected by alcohol during the initial part of the story.
+    4. Introduce a humorous or light-hearted approach to potentially dangerous or supernatural situations.
+    5. Ensure the setting is a modern urban environment, specifically after a night out.
+    6. The story must involve time travel or a significant shift in time as a key plot element.
+    7. Include dialogue that reflects the protagonist's personality and background, using colloquial language.
+    8. The narrative should begin with the protagonist having just left a pub and trying to find their way back to their lodging.
+    9. Incorporate a twist where the protagonist encounters an entity that defies their expectations of normal human interaction.
+    10. Detail an unusual physical interaction between the protagonist and the mysterious entity.
+    11. The protagonist should exhibit curiosity and a willingness to engage with the unknown, despite the risks.
+
+
+    Output -
+    1. No - The story is approximately 346 words long, not meeting the specified approximate length of 459 words.
+    2. Yes - The encounter with Aara, a spirit in an alleyway, satisfies the criterion of a being that seems out of place or time in an urban setting.
+    3. Yes - The protagonist, Alex, is significantly affected by alcohol during the initial part of the story, as indicated by his stumbling out of the bar and his head pounding.
+    4. No - The story maintains a serious tone throughout and does not introduce a humorous or light-hearted approach to the dangerous or supernatural situations encountered by Alex.
+    5. Yes - The setting of the story is a modern urban environment, specifically described after Alex leaves a bar late at night.
+    6. Yes - Time travel or a significant shift in time is a key plot element, with Alex being transported back to the night of his first encounter with Liam and Sarah.
+    7. No - There is minimal dialogue, and what is presented does not significantly reflect the protagonist's personality and background through colloquial language.
+    8. Yes - The narrative begins with Alex having just left a pub and attempting to find his way back to his lodging.
+    9. Yes - Alex's encounter with Aara, a spirit, defies his expectations of normal human interaction, satisfying this requirement.
+    10. No - While there is an interaction between Alex and the mysterious entity, Aara, the story does not detail an unusual physical interaction between them.
+    11. Yes - Alex exhibits curiosity and a willingness to engage with the unknown, despite the risks, by accepting Aara's request to help her in a battle against evil.
+
+    Number of constraints satisfied: 7
+
+    """
+
+    def chat(user_prompt, model="gpt-4-turbo", systemprompt=system_prompt + "\n" + prompt_examples,  log=False):
+
+        response = client.chat.completions.create(
+            model=model,
+            messages=[
+                {"role": "system", "content":systemprompt},
+                {"role": "user", "content":user_prompt},
+            ]
+        )
+        return response
+    
+    responses = []
+    for index, row in df.iterrows():
+            response = chat(user_prompt=row["CS_FinalPrompt"], log=False)
+            response_content = response.choices[0].message.content
+
+            # Append response content to the dataframe
+            df.at[index, 'ResponseContent'] = response_content
+
+    # Save the final updated dataframe to the original CSV file
+    df.to_csv(output_path, index=False)
         
-    # df.to_csv(save_path, index=False)
-
-import os
-
-def process_folder(folder_path, save_folder, system_prompt_file, direction, model, api_key_file):
-    try:
-        files = os.listdir(folder_path)
-        print(files)
-        startswith = ""
-        endswith = ""
-        if direction == "d2":
-            startswith = "d2_olmo_basehf"
-            endswith = "_d2.csv"
-        elif direction == "d3":
-            # startswith = "d3_"
-            startswith = "d3_"
-            endswith = "_d3.csv"
-        else:
-            raise ValueError("Invalid direction. Direction must be 'd2' or 'd3'.")
-        # print(startswith, endswith)
-        # vllm_trials/Expansion/direction3/olmo_storygen/parsed/d3_olmo_basehf_d3.csv
-        target_files = [file for file in files if file.startswith(startswith) and file.endswith(endswith)]
-        print("Target Files", target_files)
-        for file in target_files:
-            print("*"*50)
-            file_path = os.path.join(folder_path, file)
-
-            # save_folder = os.path.join(folder_path, f'responses_{model}')
-            os.makedirs(save_folder, exist_ok=True)
-            final_save_path = os.path.join(save_folder, file.replace("batch_storygens", model).replace('.csv', '_cs_output.csv'))
-            # print(file_path)
-            # print(api_key_file)
-            process_responses(file_path, final_save_path, system_prompt_file, model, api_key_file)
-            print("File Processed:", file)
-            print("File Saved at:", final_save_path)
-            print("*"*50)
-    except Exception as e:
-        print(f"An error occurred: {str(e)}")
-
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Process CSV files with OpenAI chat.")
-    parser.add_argument("--folder_path", type=str, help="Path to the folder containing input CSV files")
-    parser.add_argument("--save_folder", type=str, help="Path to the save output of CSV files")
-    parser.add_argument("--system_prompt_file", type=str, help="Path to the text file containing the system prompt")
-    parser.add_argument("--direction", type=str, help="Direction 2 or 3")
-    parser.add_argument("--api_key_file", type=str, help="Path to the text file containing the OpenAI API key")
-    parser.add_argument("--model", type=str, help="Model to evaluate gpt-4-turbo, gpt-4, and gpt-3.5-turbo. Default gpt-4")
-    args = parser.parse_args()
-    print("Arguments Passed", args)
-    process_folder(args.folder_path, args.save_folder, args.system_prompt_file, args.direction, args.model, args.api_key_file)
-    # python script.py --folder_path "vllm_trials/Expansion/direction2" --system_prompt_file "system_prompt.txt"  --direction "d2" --api_key_file "/Users/rohithsiddharthareddy/Library/CloudStorage/OneDrive-UniversityofMassachusetts/Acads/Spring 24/696DS/vllm_trials/code_trials/api_key.txt" --model "gpt-4"
+    main()
