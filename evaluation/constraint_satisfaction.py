@@ -3,18 +3,17 @@ from openai import OpenAI
 import pandas as pd
 from datetime import datetime
 import os
+import argparse
 import openpyxl
 from dotenv import load_dotenv
 
-# The below code takes a CSV file that contains 4 columns: FinalGeneratedStory, SelectedConstraints, Number_of_Constraints, FinalPrompt. 
-# It calls the GPT4 API and evaluates the story (from the column "FinalGeneratedStory") for the constraints (from the column "SelectedConstraints"). 
+# The below code takes a CSV file that contains 4 columns: FinalGeneratedStory, SelectedConstraints, Number_of_Constraints, FinalPrompt.
+# It calls the GPT4 API and evaluates the story (from the column "FinalGeneratedStory") for the constraints (from the column "SelectedConstraints").
 
-def main():
-    path = "Enter path to your input CSV file here."
-    output_path = "Enter path to your output CSV file here."
+def main(input_path, output_path):
     api_key = os.environ['OPENAI_API_KEY']
     client = OpenAI(api_key=api_key)
-    df = pd.read_csv(path)
+    df = pd.read_csv(input_path)
 
     def generate_prompt(row):
         # Extracting constraints
@@ -27,16 +26,17 @@ def main():
         return final_prompt
     
     
-    df = pd.read_csv(path)
+    df = pd.read_csv(input_path)
     # Iterate over rows
     for index, row in df.iterrows():
-            story = row['FinalGeneratedStory']
-            constraints = row['SelectedConstraints']
-            final_prompt = generate_prompt(row)
-            df.at[index, 'FinalPrompt'] = final_prompt
+        story = row['FinalGeneratedStory']
+        constraints = row['SelectedConstraints']
+        final_prompt = generate_prompt(row)
+        df.at[index, 'FinalPrompt'] = final_prompt
 
     # Save the updated DataFrame to a new CSV file
-    df.to_csv(file_path, index=False)  # Setting index=False prevents pandas from writing row numbers as the first column
+    df.to_csv(input_path, index=False)  # Setting index=False prevents pandas from writing row numbers as the first column
+
     
     system_prompt = """You are an expert reader. I will give you a story followed by a set of constraints.
     Your task is to carefully read both of them and tell how many constraints are being satisfied in the story.
@@ -191,27 +191,40 @@ def main():
 
     """
 
-    def chat(user_prompt, model="gpt-4-turbo", systemprompt=system_prompt + "\n" + prompt_examples,  log=False):
-
+    def chat(user_prompt, model="gpt-4-turbo", systemprompt=system_prompt + "\n" + prompt_examples, log=False):
         response = client.chat.completions.create(
             model=model,
             messages=[
-                {"role": "system", "content":systemprompt},
-                {"role": "user", "content":user_prompt},
+                {"role": "system", "content": systemprompt},
+                {"role": "user", "content": user_prompt},
             ]
         )
         return response
     
     responses = []
     for index, row in df.iterrows():
-            response = chat(user_prompt=row["CS_FinalPrompt"], log=False)
-            response_content = response.choices[0].message.content
+        response = chat(user_prompt=row["FinalPrompt"], log=False)
+        response_content = response.choices[0].message.content
 
-            # Append response content to the dataframe
-            df.at[index, 'ResponseContent'] = response_content
+        # Append response content to the dataframe
+        df.at[index, 'ResponseContent'] = response_content
 
     # Save the final updated dataframe to the original CSV file
     df.to_csv(output_path, index=False)
         
 if __name__ == "__main__":
-    main()
+    # Set up argparse
+    parser = argparse.ArgumentParser(description="Evaluate stories against constraints using GPT-4.")
+    
+    # Adding arguments for file paths and API key
+    parser.add_argument('--input_path', required=True, help="Path to the input CSV file")
+    parser.add_argument('--output_path', required=True, help="Path to the output CSV file")
+
+    # Parsing the arguments
+    args = parser.parse_args()
+
+    # Load environment variables (optional, if you're using dotenv to store your API key)
+    load_dotenv()
+
+    # Call the main function with arguments
+    main(args.input_path, args.output_path)

@@ -5,13 +5,15 @@ import nltk
 from nltk import word_tokenize
 from nltk.util import ngrams
 import pandas as pd
+import argparse
+
 nltk.download('punkt')
 
-# This code takes a CSV file as an input (path to CSV). The CSV file has three columns - Story1, Story2, Story3 representing three stories generated for each input prompt in CS4 benchmark. 
-# The code then computes the unique and total number of 2, 3, and 4 grams in each of the stories, and then computes the overall diversity of the stories for each prompt. 
-# The code finally stores a CSV (file path to be given) that has columns containing the unique and total number of n-grams along with the diversity scores. 
+# This code takes a CSV file as an input (path to CSV). The CSV file has three columns - Story1, Story2, Story3 representing three stories generated for each input prompt in CS4 benchmark.
+# The code then computes the unique and total number of 2, 3, and 4 grams in each of the stories, and then computes the overall diversity of the stories for each prompt.
+# The code finally stores a CSV (file path to be given) that has columns containing the unique and total number of n-grams along with the diversity scores.
 
-def main():
+def main(input_path, output_path):
     # Function to convert text to lowercase and remove punctuation
     def preprocess_text(text):
         text = text.lower()
@@ -29,11 +31,9 @@ def main():
             results.append(unique_ngrams)
             results.append(total_ngrams)
         return results
-
     
     # Data manipulation
-    path = "/path/to/your/dataset.csv"  # Adjust path accordingly
-    df = pd.read_csv(path)
+    df = pd.read_csv(input_path)
 
     # Compute n-gram statistics for each story and calculate diversity indices
     for story_label in ['Story1', 'Story2', 'Story3']:
@@ -52,10 +52,21 @@ def main():
     for n in ['2', '3', '4']:
         df[f'Sum_{n}Grams'] = df[f'Story1_unique {n}-grams'] + df[f'Story2_unique {n}-grams'] + df[f'Story3_unique {n}-grams']
         df[f'Total_{n}Grams'] = df[f'Story1_total {n}-grams'] + df[f'Story2_total {n}-grams'] + df[f'Story3_total {n}-grams']
-        df[f'Diversity_{n}G'] = df[f'Sum_{n}G'] / df[f'Total_{n}G']
+        df[f'Diversity_{n}G'] = df[f'Sum_{n}Grams'] / df[f'Total_{n}Grams']
 
     df["Product_diversity"] = df['Diversity_2G'] * df['Diversity_3G'] * df['Diversity_4G']
-    df.to_csv(path, index=False)
+    df.to_csv(output_path, index=False)
 
 if __name__ == "__main__":
-    main()
+    # Set up argparse
+    parser = argparse.ArgumentParser(description="Compute n-gram statistics and diversity from a CSV file containing stories.")
+    
+    # Adding arguments for file paths
+    parser.add_argument('--input_path', required=True, help="Path to the input CSV file")
+    parser.add_argument('--output_path', required=True, help="Path to the output CSV file where results will be saved")
+
+    # Parsing the arguments
+    args = parser.parse_args()
+
+    # Call the main function with arguments
+    main(args.input_path, args.output_path)
