@@ -10,7 +10,7 @@ def initialize_openai(api_key):
     return OpenAI(api_key=api_key)
 
 # Chat function to send prompt to OpenAI API
-def chat(client, instruction, model="gpt-3.5-turbo", system_prompt="", log=False):
+def chat(client, instruction, model="gpt-3.5-turbo", system_prompt=""):
     response = client.chat.completions.create(
         model=model,
         messages=[
@@ -18,18 +18,8 @@ def chat(client, instruction, model="gpt-3.5-turbo", system_prompt="", log=False
             {"role": "user", "content": instruction},
         ]
     )
-    log_usage(response.usage.total_tokens, model)
-    
-    if log:
-        print("Total tokens used: ", response.usage.total_tokens)
-    
-    return response
 
-# Log the token usage to a file
-def log_usage(tokens, model):
-    current_time = datetime.now().strftime("%m-%d-%Y %H:%M:%S")
-    with open("api_usage.txt", "a") as file:
-        file.write(f"{model} {current_time} : {tokens}\n")
+    return response
 
 # Parse the evaluation results
 def parse_evaluation(evaluation):
@@ -82,16 +72,6 @@ def parse_evaluation(evaluation):
         print(e)
         return None
 
-# Evaluate pair of stories
-# def pairwise_eval(client, story_a, story_b, model="gpt-3.5-turbo"):
-#     instruction = (
-#         f"Compare the following two stories:\n"
-#         f"Story A: {story_a}\n\n"
-#         f"Story B: {story_b}\n\n"
-#         f"Which story is better in terms of creativity, coherence, relevance to the theme, and overall quality? "
-#         f"Provide a detailed evaluation and declare which story is preferred overall."
-#     )
-#     return chat(client, instruction, model=model)
 def pairwise_eval(client, story1, story2, model="gpt-3.5-turbo"):
     # Prompts
     system_prompt1 = """
@@ -139,7 +119,7 @@ def pairwise_eval(client, story1, story2, model="gpt-3.5-turbo"):
     Story B:
     {story2}
     """
-    response1 = chat(client, prompt0, model=model, system_prompt=system_prompt1, log=True)
+    response1 = chat(client, prompt0, model=model, system_prompt=system_prompt1)
     return response1.choices[0].message.content
 
 # Evaluate stories and save results
