@@ -208,7 +208,6 @@ def main(input_path, output_path):
 
         # Append response content to the dataframe
         df.at[index, 'ResponseContent'] = response_content
-        print("Processed index", index)
 
     # Save the final updated dataframe to the original CSV file
     df.to_csv(output_path, index=False)
