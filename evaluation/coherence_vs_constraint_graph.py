@@ -3,6 +3,7 @@ import seaborn as sns
 import pandas as pd
 import random
 import os
+from quc_and_rcs import load_grouped_dfs_from_json
 
 # Dictionary mapping model short names to full names
 model_dict = {
@@ -143,35 +144,6 @@ def Quc_9VsRcs_7_39(quc_results, rcs_results):
     # Create a DataFrame to display the comparison table
     return pd.DataFrame(comparison_data)
 
-d3_gpt4_mgl_grouped = load_grouped_dfs_from_json("d3_gpt4_mgl_grouped.json")
-d3_gpt4_mgl_quc, d3_gpt4_mgl_rcs = calculate_quc_and_rcs(d3_gpt4_mgl_grouped)
-comparison_df = Quc_9VsRcs_7_39(d3_gpt4_mgl_quc, d3_gpt4_mgl_rcs)
-comparison_df
-
-d3_mgl_grouped = load_grouped_dfs_from_json("d3_mgl_grouped.json")
-d3_mgl_quc, d3_mgl_rcs = calculate_quc_and_rcs(d3_mgl_grouped)
-comparison_df = Quc_9VsRcs_7_39(d3_mgl_quc, d3_mgl_rcs)
-comparison_df
-
-d2_mgl_grouped = load_grouped_dfs_from_json("d2_mgl_grouped.json")
-d2_mgl_quc, d2_mgl_rcs = calculate_quc_and_rcs(d2_mgl_grouped)
-comparison_df = Quc_9VsRcs_7_39(d2_mgl_quc, d2_mgl_rcs)
-comparison_df
-
-d3_olmo_grouped = load_grouped_dfs_from_json("d3_olmo_grouped.json")
-d3_olmo_quc, d3_olmo_rcs = calculate_quc_and_rcs(d3_olmo_grouped)
-comparison_df = Quc_9VsRcs_7_39(d3_olmo_quc, d3_olmo_rcs)
-comparison_df
-
-d2_olmo_grouped = load_grouped_dfs_from_json("d2_olmo_grouped.json")
-d2_olmo_quc, d2_olmo_rcs = calculate_quc_and_rcs(d2_olmo_grouped)
-comparison_df = Quc_9VsRcs_7_39(d2_olmo_quc, d2_olmo_rcs)
-comparison_df
-
-"""# Relative Creativity Score m n
-
-RCS_{m-n} = QUC_m - QUC_n
-"""
 
 
 
