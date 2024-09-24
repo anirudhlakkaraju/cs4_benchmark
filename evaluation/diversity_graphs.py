@@ -5,7 +5,7 @@ import argparse
 # The below code takes 3 CSV files as input. These files contain two columns: Number_of_Constraints, Product_diversity.
 # The code aggregates the diversity scores for each constraint number and draws the diversity graphs.
 
-def main(file1, file2, file3, output_path):
+def main(file1, file2, file3, output_path, label1, label2, label3):
 
     def prepare_data(df):
         # Function to calculate mean diversity grouped by 'Number_of_Constraints'
@@ -37,7 +37,10 @@ def main(file1, file2, file3, output_path):
 
     # Save the plot to the specified output file
     plt.savefig(output_path)
+
     plt.show()
+
+    print(f"\nDiversity Graph for {label1}, {label2} and {label3} saved in provided location!\n" )
 
 if __name__ == "__main__":
     # Set up argparse

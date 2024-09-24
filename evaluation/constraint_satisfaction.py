@@ -208,6 +208,7 @@ def main(input_path, output_path):
 
         # Append response content to the dataframe
         df.at[index, 'ResponseContent'] = response_content
+        print("Processed index", index)
 
     # Save the final updated dataframe to the original CSV file
     df.to_csv(output_path, index=False)
@@ -216,9 +217,9 @@ if __name__ == "__main__":
     # Set up argparse
     parser = argparse.ArgumentParser(description="Evaluate stories against constraints using GPT-4.")
     
-    # Adding arguments for file paths and API key
+    # Adding arguments for file paths
     parser.add_argument('--input_path', required=True, help="Path to the input CSV file")
-    parser.add_argument('--output_path', required=True, help="Path to the output CSV file")
+    parser.add_argument('--output_path', required=True, help="Path to the output CSV file. New file will be generated with given name.")
 
     # Parsing the arguments
     args = parser.parse_args()
