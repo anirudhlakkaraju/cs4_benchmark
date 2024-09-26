@@ -38,8 +38,6 @@ def main(file1, file2, file3, output_path, label1, label2, label3):
     # Save the plot to the specified output file
     plt.savefig(output_path)
 
-    plt.show()
-
     print(f"\nDiversity Graph for {label1}, {label2} and {label3} saved in provided location!\n" )
 
 if __name__ == "__main__":

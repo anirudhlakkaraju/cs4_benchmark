@@ -27,8 +27,6 @@ def plot_constraint_satisfaction(file1, file2, file3, label1, label2, label3, ou
 
     # Save the plot to a file passed from the command line.
     plt.savefig(output_file_path)
-
-    plt.show()
     
     print(f"\nConstarint Satisfaction Graph for {label1}, {label2} and {label3} saved in provided location!\n")
 

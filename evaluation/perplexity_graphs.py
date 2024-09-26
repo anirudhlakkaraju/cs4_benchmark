@@ -27,8 +27,8 @@ def plot_average_perplexity(file1, file2, file3, label1, label2, label3, output_
     # Save the plot to a file
     plt.savefig(output_path)
 
-    # Optionally display the plot
-    plt.show()
+    print(f"\nPerplexity Graph for {label1}, {label2} and {label3} saved in provided location!\n" )
+
 
 if __name__ == "__main__":
     # Set up argparse
