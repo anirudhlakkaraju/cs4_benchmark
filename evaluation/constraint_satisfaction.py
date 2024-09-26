@@ -202,10 +202,13 @@ def main(input_path, output_path):
         return response
     
     responses = []
+    print("\n")
     for index, row in df.iterrows():
         response = chat(user_prompt=row["FinalPrompt"], log=False)
         response_content = response.choices[0].message.content
 
+        if index%10==0:
+            print(f"Constraint Satisfaction computed till index {index+1}/{len(df)}")
         # Append response content to the dataframe
         df.at[index, 'ResponseContent'] = response_content
 
