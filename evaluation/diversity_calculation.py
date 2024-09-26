@@ -16,8 +16,11 @@ nltk.download('punkt')
 def main(input_path, output_path):
     # Function to convert text to lowercase and remove punctuation
     def preprocess_text(text):
-        text = text.lower()
-        text = re.sub(f"[{string.punctuation}]", "", text)
+        if isinstance(text, str):
+            text = text.lower()
+            text = re.sub(f"[{string.punctuation}]", "", text)
+        else:
+            text = ''  # or handle it in a different way, e.g., str(text) or "NaN"
         return text
 
     # Function to calculate n-gram statistics
@@ -56,6 +59,8 @@ def main(input_path, output_path):
 
     df["Product_diversity"] = df['Diversity_2G'] * df['Diversity_3G'] * df['Diversity_4G']
     df.to_csv(output_path, index=False)
+
+    print("\nDiversity calculations are computed. Results are stored in the provided file path!\n")
 
 if __name__ == "__main__":
     # Set up argparse
