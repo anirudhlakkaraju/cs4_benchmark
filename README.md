@@ -29,22 +29,64 @@ This repository contains the code and data associated with the **CS4** benchmark
 1. **CS4 Dataset**: Contains prompts with varying degrees of specificity to test the creativity of LLMs.
 2. **Evaluation Scripts**: To measure constraint satisfaction, coherence, and perplexity of the generated stories.
 
+Here’s a streamlined version of your installation instructions that flows well and remains concise:
+
 ## Installation
 
-1. Clone this repository:
+1. **Clone the repository**:
     ```bash
-    git clone https://github.com/your-repo/cs4-evaluation.git
-    cd cs4-evaluation
+    git clone https://github.com/anirudhlakkaraju/llm-prompt-specificity.git
+    cd llm-prompt-specificity
     ```
 
-2. Set up a virtual environment and install the dependencies:
+2. **Install Python 3.11.7 using Miniconda**:
+    If you don't have Miniconda, download it from [Miniconda's website](https://docs.conda.io/en/latest/miniconda.html).
+
+3. **Create and activate a new conda environment**:
     ```bash
-    python3 -m venv env
-    source env/bin/activate
+    conda create --name myenv python=3.11.7
+    conda activate myenv
+    ```
+
+4. **Install dependencies**:
+    ```bash
     pip install -r requirements.txt
     ```
 
-3. Ensure you have the necessary API keys and environment variables set up for models requiring external APIs, such as OpenAI's API.
+5. **Set up API keys and environment variables** for external APIs (e.g., OpenAI):
+
+    - **Option 1: Using a `.env` file**:
+        1. Create a `.env` file in your project directory.
+        2. Add your API keys:
+            ```plaintext
+            OPENAI_API_KEY=your_openai_api_key
+            OTHER_API_KEY=your_other_api_key
+            ```
+        3. Load the variables in your code:
+            ```python
+            from dotenv import load_dotenv
+            load_dotenv()
+            ```
+
+    - **Option 2: Exporting directly in the terminal**:
+        - For **Linux/Mac**:
+            ```bash
+            export OPENAI_API_KEY=your_openai_api_key
+            export OTHER_API_KEY=your_other_api_key
+            ```
+        - For **Windows (Command Prompt)**:
+            ```cmd
+            set OPENAI_API_KEY=your_openai_api_key
+            set OTHER_API_KEY=your_other_api_key
+            ```
+
+6. **Access the keys in your code**:
+    ```python
+    import os
+    openai_api_key = os.getenv('OPENAI_API_KEY')
+    ```
+
+This concise format provides clear steps while maintaining a smooth flow.
 
 ## Usage
 
@@ -54,18 +96,24 @@ You can run all evaluation scripts in one step using the `run_all_evals.py` scri
 
 ```bash
 python run_all_evals.py \
-    --input_dir /path/to/input/files \
-    --output_dir /path/to/output/files \
-    --coherence_csv /path/to/coherence.csv \
-    --file1 /path/to/file1.csv \
-    --file2 /path/to/file2.csv \
-    --file3 /path/to/file3.csv \
-    --quc_input_json /path/to/quc_input.json \
-    --story_quality_input /path/to/story_quality.csv \
-    --api_key YOUR_OPENAI_API_KEY
+    --model1_path "path/to/your/model1.csv" \
+    --model2_path "path/to/your/model2.csv" \
+    --model3_path "path/to/your/model3.csv" \
+    --label1 "Label for Model 1" \
+    --label2 "Label for Model 2" \
+    --label3 "Label for Model 3" \
+    --input_file_path_cons_satisf "path/to/your/input_file.csv" \
+    --output_file_path_cons_satisf "path/to/your/output_file.csv" \
+    --output_file_path_cons_satisf_graph "path/to/your/output_graph.png" \
+    --input_path_diversity_calc "path/to/your/input_file.csv" \
+    --output_path_diversity_calc "path/to/your/output_file.csv" \
+    --output_path_diversity_graphs "path/to/your/output_graph.png" \
+    --output_path_perp_graphs "path/to/your/output_graph.png" \
+    --input_path_coh_vs_cons_graph "path/to/your/input_file.csv" \
+    --output_path_coh_vs_cons_graph "path/to/your/output_file.csv" \
+    --input_json_quc_and_rcs "path/to/your/input.json" \
+    --output_dir_quc_and_rcs "path/to/your/output_directory"
 ```
-
-This command will execute all evaluation steps, saving results and plots in the specified `output_dir`.
 
 ### Individual Scripts
 
