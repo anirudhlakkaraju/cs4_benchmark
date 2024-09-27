@@ -84,14 +84,14 @@ if __name__ == "__main__":
 
     # Paths to the scripts
     script_paths = {
-        "coherence_vs_constraint_graph.py": "coherence_vs_constraint_graph.py",
-        "constraint_satisfaction_graph_generation.py": "constraint_satisfaction_graph_generation.py",
-        "constraint_satisfaction.py": "constraint_satisfaction.py",
-        "diversity_calculation.py": "diversity_calculation.py",
-        "diversity_graphs.py": "diversity_graphs.py",
-        "perplexity_graphs.py": "perplexity_graphs.py",
-        "quc_and_rcs.py": "quc_and_rcs.py",
-        "story_quality_eval.py": "story_quality_eval.py"
+        "coherence_vs_constraint_graph.py": "evaluation/coherence_vs_constraint_graph.py",
+        "constraint_satisfaction_graph_generation.py": "evaluation/constraint_satisfaction_graph_generation.py",
+        "constraint_satisfaction.py": "evaluation/constraint_satisfaction.py",
+        "diversity_calculation.py": "evaluation/diversity_calculation.py",
+        "diversity_graphs.py": "evaluation/diversity_graphs.py",
+        "perplexity_graphs.py": "evaluation/perplexity_graphs.py",
+        "quc_and_rcs.py": "evaluation/quc_and_rcs.py",
+        "story_quality_eval.py": "evaluation/story_quality_eval.py"
     }
 
     # Ensure all scripts exist before execution
@@ -116,7 +116,7 @@ if __name__ == "__main__":
         '--output_file_path', args.output_file_path_cons_satisf_graph
     ])
     
-    # # constraint_satisfaction.py
+    # constraint_satisfaction.py
     # run_script(script_paths["constraint_satisfaction.py"], [
     #     '--input_path', args.input_file_path_cons_satisf,
     #     '--output_path', args.output_file_path_cons_satisf
@@ -145,10 +145,10 @@ if __name__ == "__main__":
     ])
     
     # quc_and_rcs.py
-    run_script(script_paths["quc_and_rcs.py"], [
-        '--input_json', args.input_json_quc_and_rcs,
-        '--output_dir', args.output_dir_quc_and_rcs
-    ])
+    # run_script(script_paths["quc_and_rcs.py"], [
+    #     '--input_json', args.input_json_quc_and_rcs,
+    #     '--output_dir', args.output_dir_quc_and_rcs
+    # ])
     
     # # story_quality_eval.py
     # run_script(script_paths["story_quality_eval.py"], [
