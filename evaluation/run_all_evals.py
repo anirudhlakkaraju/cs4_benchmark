@@ -144,7 +144,7 @@ if __name__ == "__main__":
         '--output_path', args.output_path_perp_graphs
     ])
     
-    # quc_and_rcs.py
+    # # quc_and_rcs.py
     # run_script(script_paths["quc_and_rcs.py"], [
     #     '--input_json', args.input_json_quc_and_rcs,
     #     '--output_dir', args.output_dir_quc_and_rcs
