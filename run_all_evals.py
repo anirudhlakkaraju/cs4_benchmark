@@ -84,14 +84,14 @@ if __name__ == "__main__":
 
     # Paths to the scripts
     script_paths = {
-        "coherence_vs_constraint_graph.py": "evaluation/coherence_vs_constraint_graph.py",
-        "constraint_satisfaction_graph_generation.py": "evaluation/constraint_satisfaction_graph_generation.py",
-        "constraint_satisfaction.py": "evaluation/constraint_satisfaction.py",
-        "diversity_calculation.py": "evaluation/diversity_calculation.py",
-        "diversity_graphs.py": "evaluation/diversity_graphs.py",
-        "perplexity_graphs.py": "evaluation/perplexity_graphs.py",
-        "quc_and_rcs.py": "evaluation/quc_and_rcs.py",
-        "story_quality_eval.py": "evaluation/story_quality_eval.py"
+        "coherence_vs_constraint_graph.py": "Evaluation/coherence_vs_constraint_graph.py",
+        "constraint_satisfaction_graph_generation.py": "Evaluation/constraint_satisfaction_graph_generation.py",
+        "constraint_satisfaction.py": "Evaluation/constraint_satisfaction.py",
+        "diversity_calculation.py": "Evaluation/diversity_calculation.py",
+        "diversity_graphs.py": "Evaluation/diversity_graphs.py",
+        "perplexity_graphs.py": "Evaluation/perplexity_graphs.py",
+        "quc_and_rcs.py": "Evaluation/quc_and_rcs.py",
+        "story_quality_eval.py": "Evaluation/story_quality_eval.py"
     }
 
     # Ensure all scripts exist before execution

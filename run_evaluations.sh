@@ -40,7 +40,7 @@ mkdir -p output_files/$COH_VS_CONS_DIR
 # mkdir -p output_files/$QUC_AND_RCS_DIR  # Uncomment if using QUC and RCS evaluation
 
 # Run the Python script with updated arguments
-python3 evaluation/run_all_evals.py \
+python3 run_all_evals.py \
     --model1_path "$MODEL1_PATH" \
     --model2_path "$MODEL2_PATH" \
     --model3_path "$MODEL3_PATH" \
