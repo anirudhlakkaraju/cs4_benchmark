@@ -6,6 +6,7 @@ Evaluating the creativity of large language models (LLMs) in story writing is ch
 
 Our experiments on models like **LLaMA**, **Gemma**, and **Mistral** show the difficulty LLMs face in balancing constraint satisfaction and narrative coherence, especially with highly specific prompts. We also demonstrate that **Learning from Human Feedback (LHF)**, tested with **OLMo**, improves story selection but has limited impact on generating genuinely creative stories.
 
+The datset can be found [here](https://anonymous.4open.science/r/CS-4-278F/README.md).
 ## Table of Contents
 - [Project Overview](#project-overview)
 - [Installation](#installation)
@@ -61,7 +62,7 @@ This repository contains the code and data associated with the **CS4** benchmark
 
 3. **Install dependencies**:
     ```bash
-    pip install -r requirements.txt
+    pip3 install -r requirements.txt
     ```
 
 4. **Set up API keys**:
@@ -189,7 +190,7 @@ python constraint_satisfaction.py \
 
 ### CS4 Benchmark Dataset
 
-The **CS4 dataset** is designed to evaluate LLM creativity by introducing prompts with varying levels of specificity:
+The [**CS4 dataset**](https://anonymous.4open.science/r/CS-4-278F/README.md) is designed to evaluate LLM creativity by introducing prompts with varying levels of specificity:
 - **Low-Specificity Prompts**: Fewer constraints, allowing for more creative freedom.
 - **High-Specificity Prompts**: Many constraints, forcing the model to produce more structured outputs.
 
