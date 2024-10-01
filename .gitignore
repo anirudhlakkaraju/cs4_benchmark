@@ -51,12 +51,8 @@ coverage.xml
 .ipynb_checkpoints
 
 # Data Files
-*.csv
-*.xls
-*.xlsx
 input_files/
 output_files/
-*.png
 eval_execution.log
 
 # IPython
