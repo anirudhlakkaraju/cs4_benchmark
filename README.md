@@ -35,8 +35,8 @@ This repository contains the code and data associated with the **CS4** benchmark
 
 1. **Clone the repository**:
     ```bash
-    git clone https://github.com/anirudhlakkaraju/llm-prompt-specificity.git
-    cd llm-prompt-specificity
+    git clone https://github.com/anirudhlakkaraju/cs4_benchmark.git
+    cd cs4_benchmark
     ```
 
 
@@ -106,8 +106,7 @@ Now you're ready to use the CS4 benchmark and evaluation scripts!
 
 The project is organized as follows:
 
-```
-llm-prompt-specificity/
+cs4_benchmark/
 │
 ├── input_files/           # Directory for input data
 │
