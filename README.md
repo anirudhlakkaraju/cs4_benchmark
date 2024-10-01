@@ -2,7 +2,8 @@
 
 ## Abstract
 
-Evaluating the creativity of large language models (LLMs) in story writing is challenging since generated stories may resemble existing narratives in the models' training data. To address this, we introduce **CS4**, a benchmark dataset with prompts of varying specificity. By increasing prompt constraints, we prevent models from reproducing known stories, indirectly assessing their creativity.
+Evaluating the creativity of large language models (LLMs) in story writing is challenging since generated stories may resemble existing narratives in the models' training data. To address this, we introduce **CS4** (**C**omparing the **S**kill of
+**C**reating **S**tories by **C**ontrolling the **S**ynthesized **C**onstraint **S**pecificity), a benchmark dataset with prompts of varying specificity. By increasing prompt constraints, we prevent models from reproducing known stories, indirectly assessing their creativity.
 
 Our experiments on models like **LLaMA**, **Gemma**, and **Mistral** show the difficulty LLMs face in balancing constraint satisfaction and narrative coherence, especially with highly specific prompts. We also demonstrate that **Learning from Human Feedback (LHF)**, tested with **OLMo**, improves story selection but has limited impact on generating genuinely creative stories.
 
