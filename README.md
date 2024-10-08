@@ -9,13 +9,14 @@ Our experiments on models like **LLaMA**, **Gemma**, and **Mistral** show the di
 
 The datset can be found [here](https://anonymous.4open.science/r/CS-4-278F/README.md).
 ## Table of Contents
-- [Project Overview](#project-overview)
+- [Project Overview](/project-overview)
 - [Installation](#installation)
 - [Project Structure](#project-structure)
 - [Usage](#usage)
 - [Datasets](#datasets)
 - [Evaluation Scripts](#evaluation-scripts)
 - [Results](#results)
+- [Citation](#citation)
 - [License](#license)
 
 ## Project Overview
@@ -105,7 +106,7 @@ Now you're ready to use the CS4 benchmark and evaluation scripts!
 ## Project Structure
 
 The project is organized as follows:
-
+```
 cs4_benchmark/
 │
 ├── input_files/           # Directory for input data
@@ -117,6 +118,7 @@ cs4_benchmark/
 ├── eval_execution.log     # Log file for evaluation execution (created during evaluation)
 │
 └── [other project files and directories]
+
 ```
 
 - `input_files/`: Contains the input data for the models and evaluations.
@@ -219,6 +221,14 @@ In our experiments:
 - Models struggle with maintaining creativity when the prompt becomes highly specific.
 - **OLMo** demonstrates improved story selection via Learning from Human Feedback (LHF), but it struggles to generate unseen creative stories, even with LHF.
 
+## Citation
+```@inproceedings{anirudh2024cs4,
+  title = {CS4: Measuring the Creativity of Large Language Models Automatically by Controlling the Number of Story-Writing Constraints},
+  author = {Atmakuru*, Anirudh and Nainani*, Jatin and Bheemreddy*, Rohith Siddhartha Reddy and Lakkaraju*, Anirudh and Yao, Zonghai and Zamani, Hamed and Chang*, Haw-Shiuan},
+  booktitle = {6th Workshop on Narrative Understanding (WNU)},
+  year = {2024}
+}
+```
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
