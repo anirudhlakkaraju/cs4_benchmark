@@ -5,9 +5,8 @@
 Evaluating the creativity of large language models (LLMs) in story writing is challenging since generated stories may resemble existing narratives in the models' training data. To address this, we introduce **CS4** (**C**omparing the **S**kill of
 **C**reating **S**tories by **C**ontrolling the **S**ynthesized **C**onstraint **S**pecificity), a benchmark dataset with prompts of varying specificity. By increasing prompt constraints, we prevent models from reproducing known stories, indirectly assessing their creativity.
 
-Our experiments on models like **LLaMA**, **Gemma**, and **Mistral** show the difficulty LLMs face in balancing constraint satisfaction and narrative coherence, especially with highly specific prompts. We also demonstrate that **Learning from Human Feedback (LHF)**, tested with **OLMo**, improves story selection but has limited impact on generating genuinely creative stories.
+Our experiments on models like **Llama**, **Gemma**, and **Mistral** show the difficulty LLMs face in balancing constraint satisfaction and narrative coherence, especially with highly specific prompts. We also demonstrate that **Learning from Human Feedback (LHF)**, tested with **OLMo**, improves story selection but has limited impact on generating genuinely creative stories.
 
-The datset can be found [here](https://anonymous.4open.science/r/CS-4-278F/README.md).
 ## Table of Contents
 - [Project Overview](/project-overview)
 - [Installation](#installation)
@@ -24,7 +23,7 @@ The datset can be found [here](https://anonymous.4open.science/r/CS-4-278F/READM
 This repository contains the code and data associated with the **CS4** benchmark, designed to evaluate the creativity of large language models (LLMs) under various levels of constraint specificity. The benchmark allows us to investigate how LLMs balance **creativity**, **constraint satisfaction**, and **coherence** in story generation tasks. Additionally, the code includes evaluation scripts for the analysis of multiple LLMs' performance on CS4.
 
 ### Key Models Evaluated:
-- **LLaMA**
+- **Llama**
 - **Gemma**
 - **Mistral**
 - **OLMo** (with insights into the impact of Learning from Human Feedback)
@@ -217,18 +216,10 @@ The key scripts for evaluation include:
 ## Results
 
 In our experiments:
-- **LLaMA**, **Gemma**, and **Mistral** show distinct performance across varying levels of constraint specificity.
+- **Llama**, **Gemma**, and **Mistral** show distinct performance across varying levels of constraint specificity.
 - Models struggle with maintaining creativity when the prompt becomes highly specific.
 - **OLMo** demonstrates improved story selection via Learning from Human Feedback (LHF), but it struggles to generate unseen creative stories, even with LHF.
 
-## Citation
-```@inproceedings{anirudh2024cs4,
-  title = {CS4: Measuring the Creativity of Large Language Models Automatically by Controlling the Number of Story-Writing Constraints},
-  author = {Atmakuru*, Anirudh and Nainani*, Jatin and Bheemreddy*, Rohith Siddhartha Reddy and Lakkaraju*, Anirudh and Yao, Zonghai and Zamani, Hamed and Chang*, Haw-Shiuan},
-  booktitle = {6th Workshop on Narrative Understanding (WNU)},
-  year = {2024}
-}
-```
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
